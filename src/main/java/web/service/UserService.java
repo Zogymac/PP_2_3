@@ -1,40 +1,36 @@
 package web.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import web.model.User;
+import web.repository.UserRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+
 import java.util.List;
 
 @Service
 public class UserService {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final UserRepository userRepository;
 
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-    @Transactional
     public User findUserById(Long id) {
-        return entityManager.find(User.class, id);
+        return userRepository.findById(id).orElse(null);
     }
 
-    @Transactional
     public void updateUser(User user) {
-        entityManager.merge(user);
+        userRepository.save(user);
     }
 
-    @Transactional
     public void deleteUser(Long id) {
-        User user = entityManager.find(User.class, id);
-        if (user != null) {
-            entityManager.remove(user);
-        }
+        userRepository.deleteById(id);
     }
 
-    @Transactional
     public List<User> getAllUsers() {
-        return entityManager.createQuery("from User", User.class).getResultList();
+        return userRepository.findAll();
     }
 }

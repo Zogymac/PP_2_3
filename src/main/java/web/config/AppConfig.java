@@ -7,13 +7,16 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
 
@@ -22,7 +25,8 @@ import java.util.Properties;
 @PropertySource("classpath:db.properties")
 @EnableTransactionManagement
 @ComponentScan(basePackages = "web")
-public class AppConfig {
+@EnableJpaRepositories(basePackages = "web")
+public class AppConfig implements WebMvcConfigurer {
 
    @Autowired
    private Environment env;
@@ -52,10 +56,10 @@ public class AppConfig {
 //   }
 
    @Bean
-   public LocalContainerEntityManagerFactoryBean getEntityManagerFactory() {
+   public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
       LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
       em.setDataSource(getDataSource());
-      em.setPackagesToScan("web.model", "web.service", "web.controller");
+      em.setPackagesToScan("web.model", "web.service", "web.controller", "web.repository");
       em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
       Properties props = new Properties();
@@ -64,6 +68,11 @@ public class AppConfig {
       em.setJpaProperties(props);
 
       return em;
+   }
+
+   @Bean
+   public JpaTransactionManager transactionManager(EntityManagerFactory emf) {
+      return new JpaTransactionManager(emf);
    }
 
 //   @Bean
@@ -81,14 +90,14 @@ public class AppConfig {
 //      return em;
 //   }
 
-   @Bean
+/*   @Bean
    public JpaTransactionManager transactionManager() {
       JpaTransactionManager transactionManager = new JpaTransactionManager();
 //      transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
       transactionManager.setEntityManagerFactory(getEntityManagerFactory().getObject());
 //      transactionManager.setEntityManagerFactory(getSessionFactory().getObject());
       return transactionManager;
-   }
+   }*/
 
 /*   @Bean
    public HibernateTransactionManager getTransactionManager() {
